@@ -13,14 +13,18 @@ class TaskController extends Controller
      *
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with('user', 'keywords')->where('removed', '=', false)->get();
+        $tasks = Task::with('user', 'keywords')->where('removed', '=', false);
+        $user = $request->user();
+        if(!$user->is_superuser){
+            $tasks->where('user_id', '=', $user->id);
+        }
         if ($tasks) {
             return response()->json([
                 'success' => true,
                 'status' => 'success',
-                'value' => $tasks,
+                'value' => $tasks->get(),
             ], 200);
         }
         return response()->json([
