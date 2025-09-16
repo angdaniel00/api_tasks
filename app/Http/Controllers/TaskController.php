@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\TaskKeyword;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -92,7 +93,7 @@ class TaskController extends Controller
     {
         if (Task::where('id','=', $task->id)->where('removed', '=', false)->exists()) {
             $record = Task::find($task->id);
-            $record->name = $request->get('name');
+            $record->title = $request->get('title');
             $record->is_done = $request->get('is_done', false);
             $record->save();
             return response()->json([
@@ -133,7 +134,7 @@ class TaskController extends Controller
     {
         if (Task::where('id','=', $request->get('id'))->where('removed', '=', false)->exists()) {
             $record = Task::find($request->get('id'));
-            $record->keywords()->attach($request->get('keyword'));
+            $record->keywords()->attach([$request->get('keyword')]);
             $record->save();
             return response()->json([
                 'success' => true,
@@ -167,5 +168,15 @@ class TaskController extends Controller
                 "message" => "Un error impidio actualizar la Tarea seleccionada!"
             ], 500);
         }
+    }
+
+    public function getDoneTask(Request $request){
+        $task = Task::findOrFail($request->get('id'));
+        $task->is_done = !$task->is_done;
+        $task->save();
+        return response([
+            "success" => true,
+            "value" => $task
+        ], 200);
     }
 }
